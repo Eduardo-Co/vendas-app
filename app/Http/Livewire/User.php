@@ -22,7 +22,7 @@ class User extends Component
     public $isEditing = false; 
     public $isCreating = false; 
     public $viewingUser = false;
-    public $musicToDelete;
+    public $userToDelete;
     public $showDeleteModal = false;	
 
     protected $rules = [
@@ -139,36 +139,26 @@ class User extends Component
     public function delete()
     {
         try {
-            $user = UserModel::findOrFail($this->musicToDelete);
-    
-            if ($user->playlists()->exists()) {
-                session()->flash('message-deleted', 'Não é possível deletar o usuário, pois ele possui playlists.');
-                return;
-            }
-    
-            if ($user->favoriteMusics()->exists()) {
-                session()->flash('message-deleted', 'Não é possível deletar o usuário, pois ele tem músicas favoritas.');
-                return;
-            }
-    
+            $user = UserModel::findOrFail($this->userToDelete);
+
             $user->delete();
             session()->flash('message-deleted', 'Usuário deletado com sucesso.');
             
         } catch (\Exception $e) {
             session()->flash('message-deleted', 'Erro ao deletar o usuário.');
         }finally{
-            $this->musicToDelete = null;
+
             $this->showDeleteModal = false;
         }
     }
-    public function confirmDelete($musicId)
+    public function confirmDelete($user)
     {
-        $this->musicToDelete = $musicId;
+        $this->userToDelete = $user;
         $this->showDeleteModal = true;
     }
     public function closeDeleteModal()
     {
             $this->showDeleteModal = false;
-            $this->musicToDelete = null;
+            $this->userToDelete = null;
     }
 }

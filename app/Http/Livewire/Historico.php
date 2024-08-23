@@ -10,7 +10,7 @@ use App\Models\User as UserModel;
 use App\Models\Produto as ProdutosModel;
 use Illuminate\Support\Facades\DB; 
 
-class Home extends Component
+class Historico extends Component
 {
     use WithPagination;
 
@@ -22,7 +22,15 @@ class Home extends Component
     public $perPage = 8; 
     public $cart = [];
     public $cartCount = 0; 
-
+    public $selectedProdutoId;
+    public $user_id;
+    public $selectedVendaId;
+    public $searchProduto = '';
+    public $viewingVenda;
+    public $selectedProducts = [];
+    public $itemsPerPage = 4; 
+    public $currentPage = 1;
+    protected $paginationTheme = 'bootstrap';
     public $showConfirmPurchaseModal = false;
 
 
@@ -49,7 +57,6 @@ class Home extends Component
         $this->cart = $cart; 
         $this->updateCartCount(); 
         $this->emit('cartUpdated'); 
-        return;
     }
     public function updateQuantity($productId, $quantity)
     {   
@@ -68,7 +75,7 @@ class Home extends Component
         session()->put('cart', $cart);
 
         if ($quantity > $product->quantidade) {
-            session()->flash('error', 'Quantidade do produo '.$product->nome.' excede o limite disponível de '.$product->quantidade.' unidades.');
+            session()->flash('error', 'Quantidade excede o limite disponível.');
             $this->emit('cartUpdated');
             return;
         }
@@ -144,16 +151,12 @@ class Home extends Component
     
             DB::commit();
     
-            $this->reset('cart');
             session()->forget('cart');
             $this->cart = [];
-            
-            $this->resetCardCount();
-
+            $this->updateCartCount();
             $this->hidePurchaseModal(); 
             session()->flash('sucess-venda', 'Compra finalizada com sucesso.');
-            $this->emit('cartUpdated');
-            
+    
         } catch (\Exception $e) {
             DB::rollBack();
             session()->flash('error-venda', 'Ocorreu um erro ao processar a compra. Por favor, tente novamente.');
@@ -162,10 +165,6 @@ class Home extends Component
     public function clearFilters()
     {
         $this->selectedCategory = null;
-    }
-
-    public function resetCardCount(){
-        $this->cartCount = 0;
     }
 
     public function activateFilter($categoryId)
@@ -185,61 +184,24 @@ class Home extends Component
         $this->updateCartCount(); 
 
     }
-    public function toggleCategories()
-    {
-        $this->showCategories = true;
-        $this->loadCategories();
-    }
-
-    public function updatedSearchCategory()
-    {
-        $this->resetPage(); 
-        $this->loadCategories();
-    }
-
-    public function updatedSearchProduct()
-    {
-        $this->resetPage(); 
-    }
-
-    public function loadMore()
-    {
-        $this->perPage += 8; 
-    }
-
-    protected function loadCategories()
-    {
-        $query = CategoriaModel::query();
-
-        if ($this->searchCategory) {
-            $query->where('nome', 'like', '%' . $this->searchCategory . '%');
-        }
-
-        $this->categories = $query->get();
-    }
 
     public function render()
     {
-        $query = ProdutosModel::query();
-    
-        if ($this->selectedCategory) {
-            $query->where('categoria_id', $this->selectedCategory);
-        }
-    
-        $products = $query
-            ->where('nome', 'like', '%' . $this->searchProduct . '%')
-            ->orderBy('created_at', 'desc')
-            ->paginate($this->perPage);
-    
-        $this->loadCategories();
-    
+        $vendas = VendaModel::where('user_id', auth()->id())
+        ->paginate(6);
 
-        return view('livewire.home', [
-            'categories' => $this->categories,
-            'products' => $products,
-            'cartCount' => $this->cartCount, 
-            'showConfirmPurchaseModal' => $this->showConfirmPurchaseModal,
-            'hasMorePages' => $products->hasMorePages(),  
+        $produtos = ProdutosModel::where('nome', 'like', '%' . $this->searchProduto . '%')->get();
+
+        $start = max($vendas->currentPage() - 2, 1);
+        $end = min($vendas->currentPage() + 2, $vendas->lastPage());
+
+        return view('livewire.historico', [
+            'vendas' => $vendas,
+            'produtos' => $produtos,
+            'start' => $start,
+            'end' => $end,
+            'selectedProductPerPage' => $this->getCurrentPageProducts(),
+            'totalProducts' => count($this->selectedProducts),
         ]);
     }
     public function showPurchaseModal()
@@ -259,5 +221,62 @@ class Home extends Component
             session()->put('cart', $this->cart);
             $this->updateCartCount(); 
         }
+    }
+
+    public function getCurrentPageProducts()
+    {
+        $start = ($this->currentPage - 1) * $this->itemsPerPage;
+
+    return collect($this->selectedProducts)->slice($start, $this->itemsPerPage);
+    }
+
+    public function nextPage()
+    {
+        if (($this->currentPage * $this->itemsPerPage) < count($this->selectedProducts)) {
+            $this->currentPage++;
+        }
+    }
+
+    public function previousPage()
+    {
+        if ($this->currentPage > 1) {
+            $this->currentPage--;
+        }
+    }
+    
+    public function view($vendaId)
+    {
+        $this->viewingVenda = VendaModel::findOrFail($vendaId);
+
+
+        $this->selectedProducts = $this->viewingVenda->produtos->mapWithKeys(function($produto) {
+            return [
+                $produto->id => [
+                    'produto' => $produto,
+                    'quantidade' => $produto->pivot->quantidade,
+
+                ],
+            ];
+        })->toArray();
+    }
+
+    public function closeView() 
+    {
+        $this->viewingVenda = null; 
+    }
+    
+    
+    public function getTotalValue()
+    {
+        $total = 0;
+    
+        foreach ($this->selectedProducts as $produtoId => $details) {
+            $quantidade = (int) $details['quantidade'];
+            $valor = (float) $details['produto']['valor'];
+    
+            $total += $quantidade * $valor;
+        }
+    
+        return $total;
     }
 }

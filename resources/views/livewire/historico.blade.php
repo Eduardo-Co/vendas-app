@@ -106,6 +106,7 @@
             </ul>
         </div>
     </nav>
+
     @if(session()->has('sucess-venda'))
     <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
             {{ session('sucess-venda') }}
@@ -123,6 +124,10 @@
             </button>
         </div>
     @endif
+    
+    <br>
+    <h1 class="section-title text-center">Minhas Compras</h1>
+
     @if($showConfirmPurchaseModal)
         <div class="modal-overlay"></div>
         <div class="modal fade show" tabindex="-1" role="dialog" style="display: block;" aria-modal="true" role="dialog">
@@ -184,148 +189,140 @@
             </div>
         </div>
     @endif
-
-
-
-    <main class="mx-5 my-3">
-        <div class="fixed inset-0 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 z-50" wire:click.self="$set('showCategories', false)">
-            <div class="bg-light p-4 rounded-lg w-100 position-relative shadow-lg">
-                @if(empty($categories))
-                    <div class="d-flex flex-column align-items-center text-center">
-                        <span class="h1 mb-2">😞</span>
-                        <p class="text-muted">Não há nenhuma categoria disponível.</p>
-                    </div>
-                @else
-                    <form class="form-inline mb-3">
-                        <input class="form-control form-control-lg w-50 mr-2" type="search" placeholder="Buscar categorias" aria-label="Search" wire:model="searchCategory">
-                        <div class="d-flex align-items-center">
-                            @if($selectedCategory)
-                                <div class="ml-3">
-                                    <button type="button" wire:click="clearFilters" class="btn btn-sm btn-outline-secondary d-flex align-items-center">
-                                        <i class="fas fa-eraser mr-2"></i> Limpar Filtros
-                                    </button>
-                                </div>
-                            @else
-                                <h6 class="font-weight-bold text-primary ml-3">Clique na categoria para filtrar</h6>
-                            @endif
-                        </div>
-                                                
-                    </form>
-                    <div id="categoryCarousel" class="carousel slide" data-ride="carousel">
-                        <div class="carousel-inner">
-                            @foreach ($categories->chunk(6) as $chunk)
-                            <div class="carousel-item {{ $loop->first ? 'active' : '' }}">
-                                <div class="row no-gutters">
-                                    @foreach ($chunk as $category)
-                                        <div class="col-md-2">
-                                            <div class="card bg-light border position-relative shadow-sm mb-3 category-card">
-                                                <img src="{{ asset('storage/' . $category->imagem_url) }}" alt="{{ $category->nome }}" class="card-img-top" style="height: 200px; object-fit: cover;">
-                                                <div class="card-body bg-color p-3">
-                                                    <h5 class="card-title">{{ $category->nome }}</h5>
-                                                    <p class="card-text">{{ $category->descricao }}</p>
-                                                </div>
-                                                <div class="filter-overlay d-flex justify-content-center align-items-center">
-                                                    <button class="btn btn-primary" wire:click="activateFilter({{ $category->id }})">Filtrar</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                            
-                            @endforeach
-                        </div>
-                        <a class="carousel-control-prev" href="#categoryCarousel" role="button" data-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true">
-                                <i class="fas fa-chevron-left"></i>
-                            </span>
-                            <span class="sr-only">Anterior</span>
-                        </a>
-                        <a class="carousel-control-next" href="#categoryCarousel" role="button" data-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true">
-                                <i class="fas fa-chevron-right"></i>
-                            </span>
-                            <span class="sr-only">Próximo</span>
-                        </a>
-                    </div>
-                @endif
-            </div>
+    <div class="container">
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Valor Total</th>
+                        <th>Quantidade total</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($vendas as $venda)
+                        <tr>
+                            <td>{{ number_format($venda->valor_total, 2, ',', '.') }} R$</td> 
+                            <td>{{ $venda->quantidade_total }}</td>
+                            <td class="text-center actions-column">
+                                <button 
+                                    wire:click="view({{ $venda->id }})" 
+                                    class="btn btn-info btn-sm"
+                                    wire:loading.attr="disabled"
+                                >
+                                    <i class="fas fa-eye"></i> Visualizar
+                                </button>
+                            </td>                            
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="text-center">Nenhuma venda encontrada</td>
+                        </tr>
+                    @endforelse
+                </tbody>            
+            </table>
         </div>
-        <div class="my-4">
-            <div class="card shadow-lg border-light">
-                <div class="card-body p-4">
-                    <form class="form-inline mb-3">
-                        <input class="form-control form-control-lg w-50 mr-2" type="search" placeholder="Buscar produtos" aria-label="Search" wire:model="searchProduct">
-                    </form>
-                    
-                    <h4>Produtos Disponíveis</h4>
-                    <div class="row">
-                        @foreach ($products->where('quantidade', '>', 0) as $product)
-                            <div class="col-md-3 mb-4">
-                                <div class="card bg-light border shadow-sm">
-                                    <img src="{{ asset('storage/' . $product->imagem_url) }}" alt="{{ $product->nome }}" class="card-img-top" style="height: 200px; object-fit: cover;">
-                                    <div class="card-body">
-                                        <h5 class="card-title">Nome: {{ $product->nome }}</h5>
-                                        <p class="card-text">
-                                            <strong>R$ {{ number_format($product->valor, 2, ',', '.') }}</strong>
-                                        </p>
+        <div class="flex flex-row mt-2">
+            {{ $vendas->links() }}
+        </div>
+    </div>
+
+
+    @if($viewingVenda)
+        <div class="modal fade show" tabindex="-1" role="dialog" style="display: block;" aria-modal="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">View Venda</h5>
+                        <button type="button" class="close" wire:click="closeView" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <div class="form-group">
+                                        <label for="view_total_value">Total Value</label>
+                                        <input type="text" id="view_total_value" value="{{ number_format($viewingVenda->valor_total, 2, ',', '.') ?? 'N/A' }}" class="form-control" readonly />
                                     </div>
-                                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between">
-                                        <button wire:loading.attr="disabled" wire:click="addToCart({{ $product->id }})" class="btn btn-outline-success btn-sm">
-                                            Adicionar ao Carrinho
-                                        </button>                                        
+                                    <div class="form-group">
+                                        <label for="view_total_quantity">Total Quantity</label>
+                                        <input type="text" id="view_total_quantity" value="{{ $viewingVenda->quantidade_total ?? 'N/A' }}" class="form-control" readonly />
+                                    </div>
+                                </div>
+                                <div class="col-md-8 mb-3">
+                                    <h5>Selected Products</h5>
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Quantity</th>
+                                                <th>Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($selectedProductPerPage as $produto)
+                                                <tr>
+                                                    <td>{{ $produto['produto']['nome'] }}</td>
+                                                    <td>{{ $produto['quantidade'] }}</td>
+                                                    <td>{{ number_format($produto['produto']['valor'], 2, ',', '.') }} R$</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                    <div class="d-flex justify-content-between">
+                                        @if ($currentPage > 1)
+                                            <button 
+                                                type="button" 
+                                                wire:click="previousPage" 
+                                                class="btn btn-primary"
+                                            >
+                                                &laquo; Previous
+                                            </button>
+                                        @endif
+                                    
+                                        @if (($currentPage * $itemsPerPage) < $totalProducts)
+                                            <button 
+                                                type="button" 
+                                                wire:click="nextPage" 
+                                                class="btn btn-primary"
+                                            >
+                                                Next &raquo;
+                                            </button>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
-                        @endforeach
-                    </div>
-        
-                    <h4 class="mt-5">Produtos Esgotados</h4>
-                    <div class="row">
-                        @foreach ($products->where('quantidade', '<=', 0) as $product)
-                            <div class="col-md-3 mb-4">
-                                <div class="card bg-light border shadow-sm">
-                                    <img src="{{ asset('storage/' . $product->imagem_url) }}" alt="{{ $product->nome }}" class="card-img-top" style="height: 200px; object-fit: cover;">
-                                    <div class="card-body">
-                                        <h5 class="card-title">Nome: {{ $product->nome }}</h5>
-                                        <p class="card-text">
-                                            <strong>R$ {{ number_format($product->valor, 2, ',', '.') }}</strong>
-                                            <span class="badge badge-danger ml-2">Esgotado</span>
-                                        </p>
-                                    </div>
-                                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between">
-                                        <button class="btn btn-secondary btn-sm" disabled>
-                                            Esgotado
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-        
-                    <div class="text-center mt-3">
-                        @if($hasMorePages)
-                            <button wire:click="loadMore" class="btn btn-secondary" wire:loading.attr="disabled" wire:target="loadMore">
-                                Carregar mais
-                            </button>
-                        @else
-                            <span class="text-muted">Todos os produtos foram carregados.</span>
-                        @endif
-                        <div wire:loading wire:target="loadMore" class="text-center mt-2">
-                            <i class="fas fa-spinner fa-spin fa-2x"></i>
                         </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between align-items-center bg-light border-top p-3">
+                        <button type="button" class="btn btn-secondary" wire:click="closeView">
+                            Close
+                        </button>
                     </div>
                 </div>
             </div>
-        </div>        
-    </main>
+        </div>
+    @endif
+
+
 
     <button onclick="scrollToTop()" class="fixar-botao btn btn-dark rounded-circle shadow btn-scroll-top">
         <i class="fas fa-chevron-up"></i>
     </button>
 
     <style>
-        
+        .actions-column{
+            width: 200px;
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--color-primary-dark);
+            margin-bottom: 20px;
+        }
+
         :root {
             --color-primary-dark: #171133;
             --color-primary: #581e44; 
@@ -355,36 +352,7 @@
             min-width: 20px;
             min-height: 20px;
         }
-    
-        .carousel-control-prev,
-        .carousel-control-next {
-            width: 5%;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 10;
-        }
-    
-        .carousel-control-prev {
-            left: -3%;
-        }
-    
-        .carousel-control-next {
-            right: -3%;
-        }
-    
-        .carousel-control-prev-icon,
-        .carousel-control-next-icon {
-            background: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-    
-        .carousel-control-prev-icon i,
-        .carousel-control-next-icon i {
-            font-size: 2rem;
-            color: var(--color-primary-dark);
-        }
+
     
         .bg-color {
             background-color: var(--color-light);
@@ -402,52 +370,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             z-index: 1050;
         }
-    
-        .category-card {
-            position: relative;
-            overflow: hidden;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-            background-color: var(--color-background);
-        }
-    
-        .category-card:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        }
-    
-        .filter-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-        }
-    
-        .category-card:hover .filter-overlay {
-            opacity: 1;
-        }
-    
-        .filter-overlay button {
-            background-color: var(--color-primary);
-            border: none;
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 20px;
-            transition: background-color 0.3s ease-in-out;
-        }
-    
-        .filter-overlay button:hover {
-            background-color: var(--color-primary-dark);
-        }
-    
+
         .dropdown-menu {
             z-index: 1059 !important;
             position: absolute;
@@ -518,13 +441,6 @@
     </style>
 
     <script>
-        const scrollToTop = () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        };
-
         function adjustDropdownPosition() {
             const dropdownMenu = document.querySelector('#dropdownMenu');
             const rect = dropdownMenu.getBoundingClientRect();

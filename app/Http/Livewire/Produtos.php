@@ -165,7 +165,7 @@ class Produtos extends Component
         }
 
         $produto->delete();
-        session()->flash('message-deleted', 'produto deletada com sucesso.');
+        session()->flash('message-deleted', 'Produto deletado com sucesso.');
         
 
         $this->produtoToDelete = null;

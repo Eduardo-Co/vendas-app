@@ -23,7 +23,7 @@
                     </div>
                     <form wire:submit.prevent="delete({{ $vendaToDelete }})">
                         <div class="modal-body">
-                            <p>Are you sure you want to delete this music?</p>
+                            <p>Are you sure you want to delete this trade?</p>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" wire:click="closeDeleteModal">Cancel</button>
@@ -128,7 +128,15 @@
                                                                 <i class="fas fa-times"></i>
                                                             </button>
                                                         </td>
-                                                        <td>Qnt. Max: {{$details['produto']['quantidade']}}</td>
+                                                        <td>
+                                                            @if($details['produto']['quantidade'] == 0)
+                                                                <span class="badge badge-danger ml-2">Esgotado</span>
+                                                            @else
+                                                                {{$details['produto']['quantidade']}}
+                                                            @endif
+                                                        </td>
+                                                        
+                                                        </td>
                                                     </tr>
                                                     
                                                 @endforeach 
@@ -182,86 +190,86 @@
     @endif
 
     @if($viewingVenda)
-    <div class="modal fade show" tabindex="-1" role="dialog" style="display: block;" aria-modal="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">View Venda</h5>
-                    <button type="button" class="close" wire:click="closeView" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <div class="form-group">
-                                    <label for="view_user_id">User</label>
-                                    <input type="text" id="view_user_id" value="{{ $viewingVenda->user->name ?? 'N/A' }}" class="form-control" readonly />
+        <div class="modal fade show" tabindex="-1" role="dialog" style="display: block;" aria-modal="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">View Venda</h5>
+                        <button type="button" class="close" wire:click="closeView" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <div class="form-group">
+                                        <label for="view_user_id">User</label>
+                                        <input type="text" id="view_user_id" value="{{ $viewingVenda->user->name ?? 'N/A' }}" class="form-control" readonly />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="view_total_value">Total Value</label>
+                                        <input type="text" id="view_total_value" value="{{ number_format($viewingVenda->valor_total, 2, ',', '.') ?? 'N/A' }}" class="form-control" readonly />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="view_total_quantity">Total Quantity</label>
+                                        <input type="text" id="view_total_quantity" value="{{ $viewingVenda->quantidade_total ?? 'N/A' }}" class="form-control" readonly />
+                                    </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="view_total_value">Total Value</label>
-                                    <input type="text" id="view_total_value" value="{{ number_format($viewingVenda->valor_total, 2, ',', '.') ?? 'N/A' }}" class="form-control" readonly />
-                                </div>
-                                <div class="form-group">
-                                    <label for="view_total_quantity">Total Quantity</label>
-                                    <input type="text" id="view_total_quantity" value="{{ $viewingVenda->quantidade_total ?? 'N/A' }}" class="form-control" readonly />
-                                </div>
-                            </div>
-                            <div class="col-md-8 mb-3">
-                                <h5>Selected Products</h5>
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Product</th>
-                                            <th>Quantity</th>
-                                            <th>Value</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($selectedProductPerPage as $produto)
+                                <div class="col-md-8 mb-3">
+                                    <h5>Selected Products</h5>
+                                    <table class="table">
+                                        <thead>
                                             <tr>
-                                                <td>{{ $produto['produto']['nome'] }}</td>
-                                                <td>{{ $produto['quantidade'] }}</td>
-                                                <td>{{ number_format($produto['produto']['valor'], 2, ',', '.') }} R$</td>
+                                                <th>Product</th>
+                                                <th>Quantity</th>
+                                                <th>Value</th>
                                             </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                                <div class="d-flex justify-content-between">
-                                    @if ($currentPage > 1)
-                                        <button 
-                                            type="button" 
-                                            wire:click="previousPage" 
-                                            class="btn btn-primary"
-                                        >
-                                            &laquo; Previous
-                                        </button>
-                                    @endif
-                                
-                                    @if (($currentPage * $itemsPerPage) < $totalProducts)
-                                        <button 
-                                            type="button" 
-                                            wire:click="nextPage" 
-                                            class="btn btn-primary"
-                                        >
-                                            Next &raquo;
-                                        </button>
-                                    @endif
+                                        </thead>
+                                        <tbody>
+                                            @foreach($selectedProductPerPage as $produto)
+                                                <tr>
+                                                    <td>{{ $produto['produto']['nome'] }}</td>
+                                                    <td>{{ $produto['quantidade'] }}</td>
+                                                    <td>{{ number_format($produto['produto']['valor'], 2, ',', '.') }} R$</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                    <div class="d-flex justify-content-between">
+                                        @if ($currentPage > 1)
+                                            <button 
+                                                type="button" 
+                                                wire:click="previousPage" 
+                                                class="btn btn-primary"
+                                            >
+                                                &laquo; Previous
+                                            </button>
+                                        @endif
+                                    
+                                        @if (($currentPage * $itemsPerPage) < $totalProducts)
+                                            <button 
+                                                type="button" 
+                                                wire:click="nextPage" 
+                                                class="btn btn-primary"
+                                            >
+                                                Next &raquo;
+                                            </button>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer d-flex justify-content-between align-items-center bg-light border-top p-3">
-                    <button type="button" class="btn btn-secondary" wire:click="closeView">
-                        Close
-                    </button>
+                    <div class="modal-footer d-flex justify-content-between align-items-center bg-light border-top p-3">
+                        <button type="button" class="btn btn-secondary" wire:click="closeView">
+                            Close
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-@endif
+    @endif
 
 
     @unless($isEditing || $isCreating)

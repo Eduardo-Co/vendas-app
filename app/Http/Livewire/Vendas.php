@@ -181,15 +181,25 @@ class Vendas extends Component
             $this->addError('selectedProducts', 'Você deve selecionar ao menos um produto.');
             return;
         }
-
+    
         $this->validate();
-
+    
         DB::beginTransaction();
-
+    
         try {
+            foreach ($this->selectedProducts as $produtoId => $details) {
+                $product = ProdutoModel::find($produtoId);
+    
+                if ($product->quantidade < $details['quantidade']) {
+                    $this->addError('selectedProducts', 'Quantidade insuficiente no estoque para o produto: ' . $product->nome);
+                    DB::rollBack();
+                    return;
+                }
+            }
+    
             if ($this->isEditing) {
                 $venda = VendaModel::findOrFail($this->selectedVendaId);
-
+    
                 $venda->update([
                     'user_id' => $this->user_id,
                     'quantidade_total' => array_sum(array_column($this->selectedProducts, 'quantidade')),
@@ -197,17 +207,21 @@ class Vendas extends Component
                         return $details['quantidade'] * $details['produto']['valor'];
                     }, $this->selectedProducts)),
                 ]);
-
+    
                 $syncData = [];
                 foreach ($this->selectedProducts as $produtoId => $details) {
                     $syncData[$produtoId] = [
                         'quantidade' => $details['quantidade'],
                         'valor_unitario' => $details['produto']['valor'],
                     ];
+                    
+                    $product = ProdutoModel::find($produtoId);
+                    $product->quantidade -= $details['quantidade'];
+                    $product->save();
                 }
-
+    
                 $venda->produtos()->sync($syncData);
-
+    
             } elseif ($this->isCreating) {
                 $venda = VendaModel::create([
                     'user_id' => $this->user_id,
@@ -216,28 +230,34 @@ class Vendas extends Component
                         return $details['quantidade'] * $details['produto']['valor'];
                     }, $this->selectedProducts)),
                 ]);
-
+    
                 foreach ($this->selectedProducts as $produtoId => $details) {
                     $venda->produtos()->attach($produtoId, [
                         'quantidade' => $details['quantidade'],
                         'valor_unitario' => $details['produto']['valor'],
                     ]);
+    
+                    $product = ProdutoModel::find($produtoId);
+                    $product->quantidade -= $details['quantidade'];
+                    $product->save();
                 }
             }
-
+    
             DB::commit();
-
+    
             $this->resetInputFields();
             $this->resetPage();
-
+    
             session()->flash('message', $this->isEditing ? 'Venda atualizada com sucesso.' : 'Venda criada com sucesso.');
-
+    
         } catch (\Exception $e) {
             DB::rollBack();
-
+    
             session()->flash('message-deleted', 'Ocorreu um erro ao salvar a venda. Por favor, tente novamente.');
         }
     }
+    
+    
 
     
     public function getTotalValue()

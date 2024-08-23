@@ -8,9 +8,12 @@
             @if(session()->has('message-deleted'))
                 <strong>{{ session('message-deleted') }}</strong>
             @endif
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
         </div>
     @endif
+
 
     @if($isEditing || $isCreating)
         <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);" wire:click.self="resetInputFields">
@@ -197,9 +200,9 @@
                     <div class="modal-header">
                         <h5 class="modal-title">Confirm Deletion</h5>
                     </div>
-                    <form wire:submit.prevent="delete({{ $musicToDelete }})">
+                    <form wire:submit.prevent="delete({{ $userToDelete }})">
                         <div class="modal-body">
-                            <p>Are you sure you want to delete this music?</p>
+                            <p>Are you sure you want to delete this user?</p>
                         </div>
                         <div class="modal-footer">
                             <button 

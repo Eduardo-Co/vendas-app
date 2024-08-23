@@ -23,7 +23,7 @@
                     </div>
                     <form wire:submit.prevent="delete({{ $categoriaToDelete }})">
                         <div class="modal-body">
-                            <p>Are you sure you want to delete this music?</p>
+                            <p>Are you sure you want to delete this categorie?</p>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" wire:click="closeDeleteModal">Cancel</button>

@@ -27,9 +27,18 @@ Route::middleware(['auth'])->group(function () {
 
     //usuario
     Route::get('home',[HomeController::class, 'index'])
-    ->name('home');
+    ->name('user.home');
     Route::post('home',[HomeController::class, 'index'])
-    ->name('home');
+    ->name('user.home');
+
+    Route::get('/historico', function () {
+        return view('users.historico');
+    })->name('user.user');
+
+    Route::post('/historico', function () {
+        return view('users.historico');
+    })->name('user.historico');
+
 
     //rota admin
     Route::middleware(['is_admin'])->group(function () {

@@ -1,4 +1,3 @@
-<!-- resources/views/admin/users.blade.php -->
 @extends('layouts.app')
 
 @section('title', 'Home')

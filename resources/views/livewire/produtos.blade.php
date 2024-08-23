@@ -23,7 +23,7 @@
                     </div>
                     <form wire:submit.prevent="delete({{ $produtoToDelete }})">
                         <div class="modal-body">
-                            <p>Are you sure you want to delete this music?</p>
+                            <p>Are you sure you want to delete this product?</p>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" wire:click="closeDeleteModal">Cancel</button>
@@ -242,7 +242,13 @@
                     <tr>
                         <td>{{ $produto->nome }}</td>
                         <td>{{ number_format($produto->valor, 2, ',', '.') }}</td> 
-                        <td>{{ $produto->quantidade }}</td>
+                        <td>
+                            @if($produto->quantidade == 0)
+                                <span class="badge badge-danger ml-2">Esgotado</span>
+                            @else
+                                {{$produto->quantidade}}
+                            @endif
+                        </td>
                         <td>{{ $produto->categoria->nome }}</td> 
                         <td>
                             @if($produto->imagem_url)
