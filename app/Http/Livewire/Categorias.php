@@ -27,7 +27,7 @@ class Categorias extends Component
 
     protected $rules = [
         'nome' => 'required|string|max:255',
-        'descricao' => 'nullable|string',
+        'descricao' => 'required|string',
         'imagem_url' => 'nullable|image|max:5024',
     ];
     protected $paginationTheme = 'bootstrap';

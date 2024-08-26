@@ -17,7 +17,7 @@ class CreateCategoriasTable extends Migration
             $table->id();
             $table->string('nome');
             $table->string('imagem_url')->nullable();
-            $table->text('descricao')->nullable();
+            $table->text('descricao');
             $table->timestamps();
         });
     }
