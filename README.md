@@ -1,7 +1,7 @@
 
 # Aplicação de Gerenciamento de vendas e estoque.
 
-Esta aplicação foi desenvolvida para gerenciar produtos, categorias e vendas. Ela permite realizar operações de cadastro, consulta, atualização e exclusão (CRUD) para cada uma dessas entidades. O projeto foi desenvolvido utilizando Laravel e estilizado com Bootstrap.
+Esta aplicação foi desenvolvida para gerenciar produtos, categorias e vendas. Ela permite realizar operações de cadastro, consulta, atualização e exclusão (CRUD) para cada uma dessas entidades. O projeto foi desenvolvido utilizando Laravel e estilizado com Bootstrap e Livewire.
 
 ## Tecnologias Utilizadas
 
@@ -10,6 +10,7 @@ Esta aplicação foi desenvolvida para gerenciar produtos, categorias e vendas. 
 - MySQL
 - Bootstrap 4.x
 - Composer version 2.7.4
+- Livewire v2.12.8
 
 ## Instalando e configurando
 
