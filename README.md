@@ -38,6 +38,9 @@ Nota: Se os seeders forem executados, os seguintes logins serão criados:
 Administrador: admin@example.com
 Usuário: user@example.com
 Senha padrão para ambos: password
+
+Os Logins são feitos no mesmo formulário de login, caso o usuário seja adminsitrador será redirecionado para a parte de Admin. 
+
 Caso opte por não rodar os seeders, será necessário criar um usuário através da página de registro. Para acessar a parte administrativa, será preciso 
 alterar manualmente a permissão desse usuário para "administrator" na coluna profile da tabela correspondente no banco de dados.
 
